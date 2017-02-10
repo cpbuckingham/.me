@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'githubstats'
+require 'optparse'
+
+opt = OptionParser.new do |opts|
+  opts.banner = 'Usage: githubstats [-h] [USER]'
+  opts.on_tail('-v', '--version', 'Show version') do
+    puts GithubStats::VERSION
+    exit
+  end
+end.parse!
+
+user = GithubStats.new ARGV.first
+
+puts "Contribution data for #{user.name}:
+  Today's score: #{user.today}
+  Current streak: #{(user.streak || []).length}
+  Longest streak: #{(user.longest_streak || []).length}
+  High score: #{user.max.score} on #{user.max.date}
+  Quartile boundaries: #{user.quartile_boundaries.inspect}"
+
+# Uses https://github.com/holman/spark
+system('spark', *user.raw.pop(60).map { |point| point.score.to_s })
